@@ -22,6 +22,14 @@ abstract class LGC_Model_DbRepository
     /** @var LGC_Model_IdentityMap */
     protected $_identityMap;
 
+    
+    static protected $_disableWrites = false;
+    
+    static public function disableWrites() {
+        self::$_disableWrites = true;
+    }
+
+    
     /**
      * 
      * @param string $objectClass clase principal que almacenará el repositorio
@@ -179,6 +187,9 @@ abstract class LGC_Model_DbRepository
      * @return int id asignado
      */
     public function persist(LGC_Model_ObjectInterface $object) {
+        if(self::$_disableWrites) {
+            throw new LGC_Model_Exception("Escrituras deshabilitadas en el repositorio");
+        }
         $id = $this->_persistToDb($object);
         $this->_identityMap->add($object);
         return $id;
@@ -191,6 +202,10 @@ abstract class LGC_Model_DbRepository
      * @throws LGC_Model_Exception
      */
     public function remove(LGC_Model_ObjectInterface $object) {
+        if(self::$_disableWrites) {
+            throw new LGC_Model_Exception("Escrituras deshabilitadas en el repositorio");
+        }
+
         if($object->getId() > 0) {
             $ret = $this->_removeFromDb($object);
             $this->_identityMap->remove($object);
